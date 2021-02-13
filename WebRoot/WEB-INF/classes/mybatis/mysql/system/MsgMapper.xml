@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="MsgTopicMapper">
+
+	<select id="topiclistPage" parameterType="page" resultType="pd"
+		useCache="false">
+		select TOPIC_ID,IFNULL(TOPIC_NAME,'') TOPIC_NAME,IFNULL(TOPIC_ORDER,'')
+		TOPIC_ORDER,IFNULL(TOPIC_CODE,'') TOPIC_CODE,IFNULL(TOPIC_DESC,'') TOPIC_DESC
+		from SYS_MSG_TOPIC
+		order by CAST(IFNULL(TOPIC_ORDER,'0') AS signed) asc
+	</select>
+
+	<select id="findConfigUserByTopic" parameterType="pd" resultType="pd"
+		useCache="false">
+		select mt.TOPIC_CODE,u.USERNAME from sys_msg_topic_user mtu
+		left join sys_msg_topic mt
+		on mtu.TOPIC_ID=mt.TOPIC_ID
+		left join sys_user u
+		on mtu.USER_ID=u.USER_ID
+	</select>
+
+	<select id="findUserByTopic" parameterType="pd" resultType="pd"
+		useCache="false">
+		select DISTINCT u.USER_ID,u.NAME from SYS_MSG_TOPIC_USER mtu
+		left join sys_user u
+		on mtu.USER_ID=u.USER_ID
+		where
+		mtu.TOPIC_ID=#{TOPICID}
+	</select>
+
+	<select id="findNewUserByTopic" parameterType="pd" resultType="pd"
+		useCache="false">
+		select u.USER_ID,u.NAME from sys_user u
+		where u.USER_ID not
+		in(
+		select DISTINCT mtu.USER_ID from SYS_MSG_TOPIC_USER mtu
+		where
+		mtu.TOPIC_ID=#{TOPICID}
+		)
+	</select>
+
+	<insert id="addUser" parameterType="list" flushCache="false">
+		insert into SYS_MSG_TOPIC_USER (
+		TU_ID,
+		USER_ID,
+		TOPIC_ID
+		) values
+		<foreach item="item" index="index" collection="list">
+			<if test="index!=0">
+				,
+			</if>
+			(
+			#{item.TUID},
+			#{item.USERID},
+			#{item.TOPICID}
+			)
+		</foreach>
+	</insert>
+
+	<delete id="deleteUser" parameterType="pd" flushCache="false">
+		delete from SYS_MSG_TOPIC_USER
+		where
+		TOPIC_ID=#{TOPICID} and
+		USER_ID in
+		<foreach item="item" index="index" collection="IDS" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+</mapper>

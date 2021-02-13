@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="RoleMapper">
+
+	<select id="rolelistPage" parameterType="page" resultType="pd"
+		useCache="false">
+		select ROLE_ID,nvl(ROLE_NAME,'') ROLE_NAME,nvl(ROLE_ORDER,'')
+		ROLE_ORDER,nvl(ROLE_CODE,'') ROLE_CODE
+		from sys_role
+		where 1=1
+		<if test="pd.ROLENAME!=null and pd.ROLENAME!=''">
+			and
+			(
+			ROLE_NAME like CONCAT(CONCAT('%', #{pd.ROLENAME}),'%')
+			or
+			ROLE_CODE like CONCAT(CONCAT('%', #{pd.ROLENAME}),'%')
+			)
+		</if>
+
+		order by TO_NUMBER(nvl(ROLE_ORDER,'0')) asc
+	</select>
+
+	<select id="findById" parameterType="pd" resultType="pd"
+		useCache="false">
+		select ROLE_ID,nvl(ROLE_NAME,'') ROLE_NAME,nvl(ROLE_ORDER,'')
+		ROLE_ORDER,nvl(ROLE_CODE,'') ROLE_CODE
+		from
+		sys_role
+		where
+		ROLE_ID =
+		#{ROLE_ID}
+	</select>
+
+	<!-- 新增用户 -->
+	<insert id="saveRole" parameterType="pd" flushCache="false">
+		insert into
+		sys_role (
+		ROLE_ID,
+		ROLE_NAME,
+		ROLE_ORDER,
+		ROLE_CODE
+		) values (
+		#{ROLE_ID},
+		#{ROLE_NAME},
+		#{ROLE_ORDER},
+		#{ROLE_CODE}
+		)
+	</insert>
+
+	<update id="editRole" parameterType="pd" flushCache="false">
+		update
+		sys_role
+		set ROLE_NAME = #{ROLE_NAME},
+		ROLE_ORDER = #{ROLE_ORDER},
+		ROLE_CODE = #{ROLE_CODE}
+		where
+		ROLE_ID = #{ROLE_ID}
+	</update>
+
+	<delete id="deleteRole" parameterType="pd" flushCache="false">
+		delete from sys_role
+		where
+		ROLE_ID in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+	<select id="findUserByRole" parameterType="pd" resultType="pd"
+		useCache="false">
+		select DISTINCT u.USER_ID,u.NAME from sys_user_role ur
+		left
+		join
+		sys_user u
+		on ur.user_id = u.user_id
+		where ur.ROLE_ID=#{ROLEID}
+	</select>
+
+	<select id="findNewUserByRole" parameterType="pd" resultType="pd"
+		useCache="false">
+		select u.USER_ID,u.NAME from sys_user u
+		where u.USER_ID not
+		in(
+		select DISTINCT ur.USER_ID from sys_user_role ur
+		where
+		ur.ROLE_ID=#{ROLEID}
+		)
+		<if test="SERACHNAME!=null and SERACHNAME!=''">
+			and
+			u.NAME like CONCAT(CONCAT('%', #{SERACHNAME}),'%')
+		</if>
+	</select>
+
+	<insert id="addUser" parameterType="list" flushCache="false" useGeneratedKeys="false">
+		insert into sys_user_role (
+		UR_ID,
+		USER_ID,
+		ROLE_ID
+		)
+		<foreach collection="list" item="item" index="index"
+			separator=" UNION ALL ">
+			SELECT #{item.URID},#{item.USERID},#{item.ROLEID} FROM DUAL
+		</foreach>
+	</insert>
+
+	<delete id="deleteUserByRole" parameterType="pd" flushCache="false">
+		delete from sys_user_role
+		where
+		ROLE_ID = #{ROLE_ID}
+	</delete>
+
+	<delete id="deleteUser" parameterType="pd" flushCache="false">
+		delete from sys_user_role
+		where
+		ROLE_ID = #{ROLEID} and
+		USER_ID in
+		<foreach item="item" index="index" collection="IDS" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+	<select id="findMenuByRole" parameterType="pd" resultType="pd"
+		useCache="false">
+		select DISTINCT m.MENU_ID ,m.MENU_NAME from sys_auth_url rm
+		left join
+		sys_menu m
+		on rm.menu_id = m.menu_id
+		where m.MENU_ID is not null and rm.ROLE_ID=#{ROLEID}
+		and m.MENU_ISDEL!='1'
+	</select>
+
+
+	<select id="findGlobaLButtonByRole" parameterType="pd"
+		resultType="pd" useCache="false">
+		select DISTINCT rb.BUTTON_ID ,sb.BUTTON_NAME
+		from sys_auth_button_all rb
+		left join
+		SYS_BUTTON sb
+		on rb.button_id =
+		sb.button_id
+		where rb.ROLE_ID=#{ROLEID}
+	</select>
+
+
+	<select id="findButtonByRole" parameterType="pd" resultType="pd"
+		useCache="false">
+		select DISTINCT rb.MENU_ID,rb.BUTTON_ID ,sb.BUTTON_NAME
+		from
+		sys_auth_button rb
+		left join
+		SYS_BUTTON sb
+		on rb.button_id =
+		sb.button_id
+		where rb.ROLE_ID=#{ROLEID}
+	</select>
+
+
+
+	<delete id="deleteMenu" parameterType="pd" flushCache="false">
+		delete
+		from sys_auth_url
+		where
+		ROLE_ID = #{ROLEID}
+	</delete>
+
+
+
+	<insert id="addMenu" parameterType="list" flushCache="false" useGeneratedKeys="false">
+		insert into sys_auth_url (
+		AUTH_ID,
+		ROLE_ID,
+		MENU_ID
+		) 
+		<foreach collection="list" item="item" index="index"
+			separator=" UNION ALL ">
+			SELECT #{item.AUTH_ID}, #{item.ROLE_ID},#{item.MENU_ID} FROM DUAL
+		</foreach>
+	</insert>
+	
+	
+
+	<select id="findListByRoleAndButton" parameterType="pd"
+		resultType="pd" useCache="false">
+		select *
+		from
+		sys_auth_button_all
+		where
+		ROLE_ID =
+		#{ROLE_ID} and BUTTON_ID=#{BUTTON_ID}
+	</select>
+
+
+	<delete id="DeleteButtonByRoleAndButton" parameterType="pd"
+		flushCache="false">
+		delete
+		from sys_auth_button_all
+		where
+		ROLE_ID = #{ROLE_ID} and
+		BUTTON_ID=#{BUTTON_ID}
+	</delete>
+
+
+	<insert id="AddButtonByRoleAndButton" parameterType="pd"
+		flushCache="false">
+		insert into
+		sys_auth_button_all (
+		AUTH_ID,
+		ROLE_ID,
+		BUTTON_ID
+		)
+		values (
+		#{AUTH_ID},
+		#{ROLE_ID},
+		#{BUTTON_ID}
+		)
+	</insert>
+
+
+	<delete id="DeleteButtonByRoleAndMenuAndButton" parameterType="pd"
+		flushCache="false">
+		delete
+		from sys_auth_button
+		where
+		ROLE_ID = #{ROLE_ID} and
+		BUTTON_ID=#{BUTTON_ID} and MENU_ID=#{MENU_ID}
+	</delete>
+
+
+	<insert id="AddButtonByRoleAndMenuAndButton" parameterType="pd"
+		flushCache="false">
+		insert into
+		sys_auth_button(
+		AUTH_ID,
+		ROLE_ID,
+		MENU_ID,
+		BUTTON_ID
+		) values (
+		#{AUTH_ID},
+		#{ROLE_ID},
+		#{MENU_ID},
+		#{BUTTON_ID}
+		)
+	</insert>
+	
+	
+	<delete id="deleteGlobalButtonByRole" parameterType="pd"
+		flushCache="false">
+		delete
+		from sys_auth_button_all
+		where
+		ROLE_ID = #{ROLE_ID}
+	</delete>
+	
+	<delete id="deleteMenuButtonByRole" parameterType="pd"
+		flushCache="false">
+		delete
+		from sys_auth_button
+		where
+		ROLE_ID = #{ROLE_ID}
+	</delete>
+	
+	<insert id="addGlobalButton" parameterType="list" flushCache="false" useGeneratedKeys="false">
+		insert into sys_auth_button_all (
+		AUTH_ID,
+		ROLE_ID,
+		BUTTON_ID
+		)
+		<foreach collection="list" item="item" index="index"
+			separator=" UNION ALL ">
+			SELECT #{item.AUTH_ID}, #{item.ROLE_ID},#{item.BUTTON_ID} FROM DUAL
+		</foreach>
+	</insert>
+	
+	<insert id="addMenuButton" parameterType="list" flushCache="false" useGeneratedKeys="false">
+		insert into sys_auth_button (
+		AUTH_ID,
+		ROLE_ID,
+		MENU_ID,
+		BUTTON_ID
+		)
+		<foreach collection="list" item="item" index="index"
+			separator=" UNION ALL ">
+			SELECT #{item.AUTH_ID}, #{item.ROLE_ID},#{item.MENU_ID},#{item.BUTTON_ID} FROM DUAL
+		</foreach>
+	</insert>
+
+</mapper>

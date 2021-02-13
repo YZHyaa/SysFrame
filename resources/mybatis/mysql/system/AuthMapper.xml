@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="AuthMapper">
+	
+	<!-- 获取在所有权限中全局设置的按钮 -->
+	<select id="findAllButtonByRoleUser"  parameterType="pd" resultType="pd" >
+		select DISTINCT b.BUTTON_CODE from 
+			sys_user u
+			left join
+			sys_user_role ur
+			on u.USER_ID=ur.USER_ID
+			left JOIN
+			sys_auth_button_all aba
+			on ur.ROLE_ID=aba.ROLE_ID
+			left join sys_button b
+			on aba.BUTTON_ID=b.BUTTON_ID
+			where u.USERNAME= #{USERNAME}
+			and b.BUTTON_CODE is not NULL
+	</select>
+	
+	<!-- 获取在所有权限中全局设置的菜单 -->
+	<select id="findAllUrlByRoleUser"  parameterType="pd" resultType="pd" >
+		select DISTINCT m.MENU_CODE from 
+			sys_user u
+			left join
+			sys_user_role ur
+			on u.USER_ID=ur.USER_ID
+			left JOIN
+			sys_auth_button_all aba
+			on ur.ROLE_ID=aba.ROLE_ID
+			left JOIN
+			sys_auth_url au 
+			on aba.ROLE_ID = au.ROLE_ID
+			left JOIN
+			sys_menu m
+			on au.MENU_ID=m.MENU_ID
+			where u.USERNAME= #{USERNAME}
+			and m.MENU_CODE is not NULL
+			and m.MENU_ISDEL!='1'
+	</select>
+	
+	<!-- 获取在所有权限中全局设置的菜单 -->
+	<select id="findUrlAuthCodeByRoleUser"  parameterType="pd" resultType="pd" >
+		select DISTINCT m.MENU_CODE,b.BUTTON_CODE
+			from sys_user u
+			left join
+			sys_user_role ur
+			on u.USER_ID = ur.USER_ID
+			left join
+			sys_auth_button sab
+			on ur.ROLE_ID = sab.ROLE_ID
+			left join
+			sys_menu m
+			on sab.MENU_ID=m.MENU_ID
+			left JOIN
+			sys_button b
+			on sab.BUTTON_ID=b.BUTTON_ID
+			where u.USERNAME= #{USERNAME}
+			and m.MENU_ISDEL!='1'
+	</select>
+	
+	<!-- 获取在所有权限中全局设置的菜单 -->
+	<select id="findRolesByUser"  parameterType="pd" resultType="pd" >
+		select DISTINCT r.ROLE_CODE,r.ROLE_NAME
+			from sys_user u
+			left join
+			sys_user_role ur
+			on u.USER_ID = ur.USER_ID
+			left join
+			sys_role r
+			on ur.ROLE_ID=r.ROLE_ID
+			where u.USERNAME= #{USERNAME}
+	</select>
+	
+	<!-- 获取用户的菜单权限 -->
+	<select id="findUrlsByUser"  parameterType="pd" resultType="pd" >
+		select DISTINCT m.MENU_URL,m.MENU_NAME
+			from sys_user u
+			left join
+			sys_user_role ur
+			on u.USER_ID = ur.USER_ID
+			left join
+			sys_auth_url sau
+			on ur.ROLE_ID = sau.ROLE_ID
+			left join
+			sys_menu m
+			on sau.MENU_ID=m.MENU_ID
+			where u.USERNAME= #{USERNAME}
+			and m.MENU_ISDEL!='1'
+	</select>
+
+</mapper>

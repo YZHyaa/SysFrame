@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="FilesUploadsMapper">
+	<sql id="filesUploadsColumns">
+				ID,
+		FILE_NAME,
+		BASE_PATH,
+		PATH,
+		FILE_SIZE,
+		FILE_TYPE,
+		MASTER_ID,
+		STATUS,
+		CREATE_ID,
+		CREATE_TIME
+	</sql>
+	
+    
+	<select id="get" parameterType="pd" resultType="pd" >
+		SELECT 
+			<include refid="filesUploadsColumns"/>
+		FROM sys_files_uploads a
+		WHERE a.ID = #{ID}
+	</select>
+	
+	<select id="listPage" parameterType="page" resultType="pd" >
+		SELECT 
+			<include refid="filesUploadsColumns"/>
+		FROM sys_files_uploads a where 1=1 
+						<if test="pd.FILE_NAME != null and pd.FILE_NAME != ''" >
+							AND a.FILE_NAME = #{pd.FILE_NAME}
+						</if>
+						<if test="pd.BASE_PATH != null and pd.BASE_PATH != ''" >
+							AND a.BASE_PATH = #{pd.BASE_PATH}
+						</if>
+	</select>
+	
+	<select id="findAllList" parameterType="pd" resultType="pd" >
+		SELECT 
+			<include refid="filesUploadsColumns"/>
+			FROM sys_files_uploads a where 1=1 
+			<if test="FILE_NAME != null and FILE_NAME != ''" >
+			AND a.FILE_NAME = #{FILE_NAME}
+			</if>
+			<if test="BASE_PATH != null and BASE_PATH != ''" >
+			AND a.BASE_PATH = #{BASE_PATH}
+			</if>
+			<if test="MASTER_ID != null and MASTER_ID != ''" >
+			AND a.MASTER_ID = #{MASTER_ID}
+			</if>
+			ORDER BY a.CREATE_TIME DESC
+	</select>
+	
+	<select id="findCount" parameterType="pd" resultType="pd">
+		SELECT  count(1)
+		FROM sys_files_uploads a where 1=1 
+		  and
+			a.status != #{STATUS_DELETE}
+						<if test="FILE_NAME != null and FILE_NAME != ''" >
+						AND a.FILE_NAME = #{FILE_NAME}
+						</if>
+						<if test="BASE_PATH != null and BASE_PATH != ''" >
+						AND a.BASE_PATH = #{BASE_PATH}
+						</if>
+			ORDER BY a.CREATE_TIME DESC
+	</select>
+	
+	
+	<insert id="insert" parameterType="pd">
+		INSERT INTO sys_files_uploads(
+					<!--<if test="ID != null and ID != ''">-->
+							ID,
+					<!--</if>-->
+					<!--<if test="FILE_NAME != null and FILE_NAME != ''">-->
+							FILE_NAME,
+					<!--</if>-->
+					<!--<if test="BASE_PATH != null and BASE_PATH != ''">-->
+							BASE_PATH,
+					<!--</if>-->
+					<!--<if test="PATH != null and PATH != ''">-->
+							PATH,
+					<!--</if>-->
+					<!--<if test="FILE_SIZE != null and FILE_SIZE != ''">-->
+							FILE_SIZE,
+					<!--</if>-->
+					<!--<if test="FILE_TYPE != null and FILE_TYPE != ''">-->
+							FILE_TYPE,
+					<!--</if>-->
+					<!--<if test="MASTER_ID != null and MASTER_ID != ''">-->
+							MASTER_ID,
+					<!--</if>-->
+					<!--<if test="STATUS != null and STATUS != ''">-->
+							STATUS,
+					<!--</if>-->
+					<!--<if test="CREATE_ID != null and CREATE_ID != ''">-->
+							CREATE_ID,
+					<!--</if>-->
+					<!--<if test="CREATE_TIME != null and CREATE_TIME != ''">-->
+							CREATE_TIME
+		) VALUES (
+					<!--<if test="ID != null and ID != ''">-->
+							#{ID},
+					<!--</if>-->
+					<!--<if test="FILE_NAME != null and FILE_NAME != ''">-->
+							#{FILE_NAME},
+					<!--</if>-->
+					<!--<if test="BASE_PATH != null and BASE_PATH != ''">-->
+							#{BASE_PATH},
+					<!--</if>-->
+					<!--<if test="PATH != null and PATH != ''">-->
+							#{PATH},
+					<!--</if>-->
+					<!--<if test="FILE_SIZE != null and FILE_SIZE != ''">-->
+							#{FILE_SIZE},
+					<!--</if>-->
+					<!--<if test="FILE_TYPE != null and FILE_TYPE != ''">-->
+							#{FILE_TYPE},
+					<!--</if>-->
+					<!--<if test="MASTER_ID != null and MASTER_ID != ''">-->
+							#{MASTER_ID},
+					<!--</if>-->
+					<!--<if test="STATUS != null and STATUS != ''">-->
+							#{STATUS},
+					<!--</if>-->
+					<!--<if test="CREATE_ID != null and CREATE_ID != ''">-->
+							#{CREATE_ID},
+					<!--</if>-->
+					<!--<if test="CREATE_TIME != null and CREATE_TIME != ''">-->
+							#{CREATE_TIME}
+		)
+	</insert>
+	
+	<update id="update" parameterType="pd">
+		UPDATE sys_files_uploads SET 	
+						<!--<if test="FILE_NAME != null and FILE_NAME != ''">-->
+							FILE_NAME = #{FILE_NAME},
+						<!--</if>-->
+						<!--<if test="BASE_PATH != null and BASE_PATH != ''">-->
+							BASE_PATH = #{BASE_PATH},
+						<!--</if>-->
+						<!--<if test="PATH != null and PATH != ''">-->
+							PATH = #{PATH},
+						<!--</if>-->
+						<!--<if test="FILE_SIZE != null and FILE_SIZE != ''">-->
+							FILE_SIZE = #{FILE_SIZE},
+						<!--</if>-->
+						<!--<if test="FILE_TYPE != null and FILE_TYPE != ''">-->
+							FILE_TYPE = #{FILE_TYPE},
+						<!--</if>-->
+						<!--<if test="MASTER_ID != null and MASTER_ID != ''">-->
+							MASTER_ID = #{MASTER_ID},
+						<!--</if>-->
+						<!--<if test="CREATE_ID != null and CREATE_ID != ''">-->
+							CREATE_ID = #{CREATE_ID},	
+						<!--</if>-->
+						<!--<if test="CREATE_TIME != null and CREATE_TIME != ''">-->
+							CREATE_TIME = #{CREATE_TIME}
+						
+		WHERE ID = #{ID}
+	</update>
+	
+	<update id="updateMasterId" parameterType="pd">
+			UPDATE sys_files_uploads SET MASTER_ID = #{MASTER_ID} WHERE id IN 
+			<foreach collection="IDS" item="item" index="index" open="(" separator="," close=")">
+                  #{item}
+            </foreach>
+	</update>
+	
+	<delete id="delete" parameterType="String" flushCache="false">
+			DELETE FROM sys_files_uploads WHERE id IN 
+			<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                  #{item}
+             </foreach>
+	</delete>
+	
+</mapper>

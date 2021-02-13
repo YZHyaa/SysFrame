@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="DeptMapper">
+
+	<!-- 获取组织机构列表 -->
+	<select id="getDeptList" parameterType="pd" resultType="pd" useCache="false">
+		select * from sys_dept
+		where 1=1
+		<if test="id!=null">
+			and DEPT_ID = #{id}
+		</if>
+		order by PARENT_ID asc,DEPT_ORDER asc
+	</select>
+	
+	<!-- 获取组织机构子节点 -->
+	<select id="getSubDeptList" parameterType="pd" resultType="pd" useCache="false">
+		select * from sys_dept
+		where 1=1
+		<if test="pid!=null">
+			and  PARENT_ID = #{pid}
+		</if>
+		order by PARENT_ID asc,cast(IFNULL(DEPT_ORDER,'0') as unsigned int)  asc
+	</select>
+	
+	<!-- 获取最大ID -->
+	<select id="getMaxDeptID" parameterType="pd" resultType="pd" useCache="false">
+		select IFNULL(max(DEPT_ID),0) ID from sys_dept
+	</select>
+	
+	<insert id="insertDept" parameterType="pd">
+		insert into sys_dept(DEPT_ID,DEPT_NAME,DEPT_CODE,DEPT_ORDER,PARENT_ID)
+		values(#{id},#{name},#{code},#{order},#{pid})
+	</insert>
+	
+	<update id="updateDept" parameterType="pd">
+		update sys_dept
+		set DEPT_NAME=#{name},DEPT_CODE=#{code},DEPT_ORDER=#{order}
+		where DEPT_ID=#{id}
+	</update>
+	
+	<delete id="deleteDept" parameterType="pd">
+		delete from sys_dept
+		where DEPT_ID in 
+		<foreach item="item" index="index" collection="array" open="(" separator="," close=")">
+                  ${item}
+        </foreach>
+		
+	</delete>
+	
+	<select id="findDeptByDeptId" parameterType="pd" resultType="pd" useCache="false">
+		select * from sys_dept
+		where DEPT_ID in 
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+        	'${item}'
+        </foreach>
+	</select>
+	
+	
+	
+</mapper>

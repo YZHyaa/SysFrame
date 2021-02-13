@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ButtonMapper">
+
+	<select id="buttonlistPage" parameterType="page" resultType="pd"
+		useCache="false">
+		select BUTTON_ID,nvl(BUTTON_NAME,'') BUTTON_NAME,nvl(BUTTON_ORDER,'')
+		BUTTON_ORDER,nvl(BUTTON_CODE,'') BUTTON_CODE,nvl(BUTTON_DESCP,'') BUTTON_DESCP
+		from sys_button
+		where 1=1
+		<if test="pd.BUTTONNAME!=null and pd.BUTTONNAME!=''">
+			and
+			(
+			BUTTON_NAME like CONCAT(CONCAT('%', #{pd.BUTTONNAME}),'%')
+			or
+			BUTTON_CODE like CONCAT(CONCAT('%', #{pd.BUTTONNAME}),'%')
+			)
+		</if>
+
+		order by TO_NUMBER(nvl(BUTTON_ORDER,'0')) asc
+	</select>
+
+	<select id="findById" parameterType="pd" resultType="pd"
+		useCache="false">
+		select BUTTON_ID,nvl(BUTTON_NAME,'')
+		BUTTON_NAME,nvl(BUTTON_ORDER,'') BUTTON_ORDER,nvl(BUTTON_CODE,'')
+		BUTTON_CODE,nvl(BUTTON_DESCP,'') BUTTON_DESCP
+		from
+		sys_button
+		where
+		BUTTON_ID = #{BUTTON_ID}
+	</select>
+
+	<!-- 新增用户 -->
+	<insert id="saveButton" parameterType="pd" flushCache="false">
+		insert into
+		sys_button (
+		BUTTON_ID,
+		BUTTON_NAME,
+		BUTTON_ORDER,
+		BUTTON_CODE,
+		BUTTON_DESCP
+		) values (
+		#{BUTTON_ID},
+		#{BUTTON_NAME},
+		#{BUTTON_ORDER},
+		#{BUTTON_CODE},
+		#{BUTTON_DESCP}
+		)
+	</insert>
+
+	<update id="editButton" parameterType="pd" flushCache="false">
+		update
+		sys_button
+		set BUTTON_NAME = #{BUTTON_NAME},
+		BUTTON_ORDER = #{BUTTON_ORDER},
+		BUTTON_CODE = #{BUTTON_CODE},
+		BUTTON_DESCP = #{BUTTON_DESCP}
+		where
+		BUTTON_ID = #{BUTTON_ID}
+	</update>
+
+	<delete id="deleteButton" parameterType="pd" flushCache="false">
+		delete from sys_button
+		where
+		BUTTON_ID in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+
+
+</mapper>

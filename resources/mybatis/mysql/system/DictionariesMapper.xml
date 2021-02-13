@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="DictionariesMapper">
+
+	<select id="getDicList" parameterType="pd" resultType="pd"
+		useCache="false">
+		select * from sys_dictionaries
+		where ISDEL!='1'
+		<if test="id!=null">
+			and ID = #{id}
+		</if>
+		<if test="name!=null">
+			and NAME = #{name}
+		</if>
+		order by PID asc,SORTORDER asc
+	</select>
+
+	<select id="getSubDicList" parameterType="pd" resultType="pd"
+		useCache="false">
+		select * from sys_dictionaries
+		where ISDEL!='1'
+		<if test="pid!=null">
+			and PID = #{pid}
+		</if>
+		order by SORTORDER asc
+	</select>
+
+	<select id="getSubDicListByParentCode" parameterType="pd" resultType="pd"
+		useCache="false">
+		select NAME TEXT,CODE ID from sys_dictionaries
+		where pid=(select id from sys_dictionaries where binary code= #{code}) 
+		<if test="name!=null">
+			and name=#{name}
+		</if>
+		and ISDEL!='1'
+		order by SORTORDER asc
+	</select>
+
+	<select id="findSameCode" parameterType="pd" resultType="pd"
+		useCache="false">
+		select * from SYS_DICTIONARIES
+		where id<![CDATA[<>]]>#{id}
+		<if test="code!=null">
+			and code = #{code}
+		</if>
+		<if test="code==null">
+			and CODE in (
+			select CODE from SYS_DICTIONARIES
+			where
+			id=#{id}
+			)
+		</if>
+		and ISDEL!='1'
+	</select>
+
+	<insert id="insertDic" parameterType="pd">
+		insert into
+		sys_dictionaries(ID,NAME,CODE,PID,SORTORDER,LEVELS,PCODE,ISDEL,DESCP)
+		values(#{id},#{name},#{code},#{pid},#{sortorder},#{levels},#{pcode},'0',#{descp})
+	</insert>
+
+	<update id="updateDic" parameterType="pd">
+		update sys_dictionaries
+		set
+		NAME=#{name},SORTORDER=#{sortorder},CODE=#{code},PCODE=#{pcode},DESCP=#{descp}
+		where
+		ID=#{id}
+	</update>
+
+	<update id="deleteDic" parameterType="pd">
+		update sys_dictionaries
+		set ISDEL='1'
+		where ID in
+		<foreach item="item" index="index" collection="array" open="("
+			separator="," close=")">
+			${item}
+		</foreach>
+
+	</update>
+	
+	<select id="getSubByCode" parameterType="pd" resultType="pd" >
+		select t2.* from sys_dictionaries t1 ,sys_dictionaries t2 where t1.id = t2.pid and ISDEL!=1 AND t1.code = #{code} 
+	</select>
+
+</mapper>
